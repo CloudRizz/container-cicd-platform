@@ -1,185 +1,325 @@
 # Container CI/CD Platform
 
-A container-based CI/CD pipeline that automatically validates, tests, scans, builds, and publishes a Python application using GitHub Actions and GitHub Container Registry.
+A container-based CI/CD platform that automates code validation, unit testing, security scanning, Docker image validation, and container publishing using GitHub Actions and GitHub Container Registry (GHCR).
 
-The project focuses on repeatable delivery, automated quality checks, container security, and a pull-request-driven development workflow.
+The project implements automated quality and security controls across the software delivery lifecycle, providing repeatable builds and early feedback when changes are introduced.
+
+## Architecture
+
+```text
+Developer
+    │
+    ▼
+Git Push / Pull Request
+    │
+    ├── Python Linting (Flake8)
+    ├── Unit Testing
+    ├── Docker Build Validation
+    └── Security Checks
+         ├── Gitleaks
+         └── Zizmor
+    │
+    ▼
+Docker Image Build
+    │
+    ▼
+GitHub Container Registry
+```
 
 ## Key Features
 
-- Automated linting and code-quality validation
-- Automated test execution on pull requests
-- Docker image build validation
-- Container image publishing to GitHub Container Registry (GHCR)
-- Security scanning integrated into the CI/CD workflow
-- Pull-request validation before changes are merged
-- Automated workflows implemented with GitHub Actions
+* Automated CI/CD workflows using GitHub Actions
+* Python unit testing using the built-in `unittest` framework
+* Automated Python code-quality validation with Flake8
+* Docker image build validation
+* Automated Docker image publishing to GitHub Container Registry
+* Hardcoded secret detection using Gitleaks
+* GitHub Actions security auditing using Zizmor
+* Pull-request validation for linting, container builds, and security checks
+* Pinned GitHub Actions dependencies for improved supply-chain security
+* Manually triggered testing across selectable Python versions
 
-## Project Purpose
+## Technology Stack
 
-The purpose of this repository is to demonstrate practical CI/CD implementation using GitHub Actions.
+| Technology                | Purpose                                    |
+| ------------------------- | ------------------------------------------ |
+| GitHub Actions            | CI/CD workflow automation                  |
+| Docker                    | Application containerisation               |
+| GitHub Container Registry | Container image storage                    |
+| Python                    | Application and automated testing          |
+| unittest                  | Python unit testing                        |
+| Flake8                    | Python linting and code-quality validation |
+| Gitleaks                  | Hardcoded secret detection                 |
+| Zizmor                    | GitHub Actions security analysis           |
+| Git                       | Source control                             |
 
-This project shows how automated pipelines can be used to check code quality, run tests, build Docker images, validate pull requests, and trigger deployment-style workflows when changes are made.
+## CI Pipeline
 
-## Application Overview
+Multiple GitHub Actions workflows provide independent validation controls across the repository.
 
-The application is intentionally simple so the focus remains on the CI/CD pipeline design and automation.
+### Unit Testing
 
-The Python application provides a small codebase that supports testing, linting, Dockerisation, and deployment workflow demonstrations.
-
-## Workflows Included
-
-This repository includes several GitHub Actions workflows, each designed to demonstrate a specific CI/CD capability.
-
-### CI Workflow
-
-The CI workflow runs automated checks against the application.
-
-It confirms that the application behaves as expected whenever changes are pushed or submitted through a pull request.
-
-### Lint Workflow
-
-The lint workflow checks the Python code using `flake8`.
-
-This helps enforce code quality standards and catch formatting issues before changes are merged into the main branch.
-
-Example lint command:
+Application unit tests are executed automatically using Python's built-in `unittest` framework.
 
 ```bash
-flake8 app
-````
-
-### Docker Build Workflow
-
-The Docker build workflow checks that the application can be successfully built into a Docker image.
-
-This validates the Dockerfile and confirms that the application can be containerised consistently.
-
-Example Docker build command:
-
-```bash
-docker build -t cicd-demo-app .
+cd app
+python -m unittest discover
 ```
 
-### Manual Workflow
+Dependencies are installed from the application's `requirements.txt` before the tests execute.
 
-The manual workflow demonstrates controlled workflow execution using `workflow_dispatch`.
+This provides automated verification that application behaviour remains valid as changes are introduced.
 
-This allows selected workflows to be triggered manually from the GitHub Actions tab when an on-demand pipeline run is required.
+### Code Quality
 
-### Deploy Workflow
+Flake8 is used to perform automated Python linting.
 
-The deploy workflow demonstrates a simple continuous delivery process.
-
-It builds a Docker image and pushes it to GitHub Container Registry.
-
-This creates a deployable container image automatically when changes are pushed to the main branch.
-
-### Security Checks Workflow
-
-The security checks workflow adds an additional security layer to the CI/CD process.
-
-It runs automatically on pushes and pull requests into the main branch.
-
-This workflow checks for hardcoded secrets and reviews GitHub Actions workflow files for common security issues.
-
-The purpose of this workflow is to reduce the risk of committing sensitive information such as API keys, tokens, passwords, or private keys into the repository.
-
-It also helps enforce safer GitHub Actions practices by checking workflow configuration for potential security weaknesses.
-
-## CI/CD Concepts Demonstrated
-
-This project demonstrates the following CI/CD concepts:
-
-| Concept                | Description                                                     |
-| ---------------------- | --------------------------------------------------------------- |
-| Continuous Integration | Automatically validating code changes through pipeline checks   |
-| Pull Request Triggers  | Running workflows when a pull request is opened or updated      |
-| Linting                | Enforcing Python code quality using `flake8`                    |
-| Unit Testing           | Running automated tests to validate application behaviour       |
-| Docker Build Checks    | Confirming the application can be built as a Docker image       |
-| Continuous Delivery    | Building and publishing a deployable Docker image automatically |
-| Manual Triggers        | Running workflows manually using GitHub Actions                 |
-
-## GitHub Actions Triggers
-
-The workflows use common GitHub Actions triggers such as:
-
-```yaml
-on:
-  push:
-  pull_request:
-```
-
-Some workflows also use:
-
-```yaml
-on:
-  workflow_dispatch:
-```
-
-These triggers allow workflows to run automatically or manually depending on their purpose.
-
-## Docker
-
-The project includes a Dockerfile that packages the Python application into a container image.
-
-The Docker build workflow validates that the image can be created successfully.
-
-The deploy workflow builds and publishes the image to GitHub Container Registry as part of the CD process.
-
-## How to Run Locally
-
-Run the Python application:
-
-```bash
-python app/hello.py
-```
-
-Run tests:
-
-```bash
-python -m unittest discover -s app
-```
-
-Run linting:
+The linting workflow executes on pushes and pull requests:
 
 ```bash
 flake8 app
 ```
 
-Build the Docker image locally:
+This provides consistent automated code-quality validation before changes are integrated.
+
+### Docker Build Validation
+
+Docker builds are independently validated on both pushes and pull requests.
 
 ```bash
 docker build -t cicd-demo-app .
 ```
 
-Run the Docker container:
+This verifies that application changes do not break the container build process.
+
+## Security Controls
+
+Security validation is integrated directly into the GitHub Actions workflow.
+
+### Secret Scanning
+
+Gitleaks scans the repository for accidentally committed credentials and other sensitive information.
+
+The scan is designed to identify potential exposure of:
+
+* AWS access keys
+* GitHub tokens
+* API keys
+* Passwords
+* Private keys
+* Database credentials
+
+### GitHub Actions Security
+
+Zizmor is used to analyse GitHub Actions workflow configuration for potential security weaknesses.
 
 ```bash
-docker run cicd-demo-app
+zizmor .github/workflows/security-checks.yaml
 ```
 
-## Skills Demonstrated
+The security workflow runs against changes targeting the `main` branch.
 
-This project demonstrates practical experience with:
+### Supply-Chain Security
 
-* Creating and managing GitHub Actions workflow files
-* Configuring workflow triggers for pushes and pull requests
-* Using jobs and steps to structure pipeline automation
-* Running automated commands on GitHub-hosted runners
-* Enforcing Python code quality with `flake8`
-* Running automated tests as part of a CI process
-* Building Docker images through automated pipelines
-* Validating pull requests before merge
-* Creating a basic continuous delivery workflow
-* Publishing Docker images to GitHub Container Registry
-* Structuring a repository to support CI/CD automation
+Security-sensitive GitHub Actions are pinned to specific commit SHAs rather than relying solely on mutable version tags.
 
-## Summary
+For example:
 
-This repository is a practical CI/CD demonstration project.
+```yaml
+uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+```
 
-It shows how GitHub Actions can be used to automate testing, linting, Docker image builds, pull request validation, and deployment-style workflows.
+Pinning actions reduces the risk associated with unexpected changes to third-party action versions.
 
-The aim of this project is to demonstrate hands-on DevOps skills using a Python application, Docker, and GitHub Actions.
+Workflow permissions are also explicitly restricted where possible:
 
+```yaml
+permissions:
+  contents: read
+```
+
+Container publishing receives the additional permission required to publish packages:
+
+```yaml
+permissions:
+  contents: read
+  packages: write
+```
+
+## Container Build and Publishing
+
+The delivery workflow automatically builds the application as a Docker image.
+
+GitHub Actions authenticates with GitHub Container Registry using the repository-provided `GITHUB_TOKEN`, avoiding the need to store a separate registry password.
+
+```text
+Source Code
+    │
+    ▼
+GitHub Actions
+    │
+    ▼
+Docker Build
+    │
+    ▼
+Authenticate to GHCR
+    │
+    ▼
+Push Container Image
+    │
+    ▼
+GitHub Container Registry
+```
+
+The image is currently published using the `latest` tag.
+
+## Manual Testing Workflow
+
+The repository also provides a manually triggered workflow using `workflow_dispatch`.
+
+This allows testing to be executed against a selected Python version.
+
+Available versions currently include:
+
+```text
+Python 3.8
+Python 3.9
+Python 3.10
+```
+
+This provides a simple mechanism for manually validating application behaviour across different Python runtimes.
+
+## Repository Structure
+
+```text
+.
+├── .github/
+│   └── workflows/
+│       ├── ci.yaml
+│       ├── docker-build.yaml
+│       ├── lint.yaml
+│       ├── manual-workflow.yaml
+│       ├── security-checks.yaml
+│       └── deploy.yaml
+│
+├── app/
+│   ├── requirements.txt
+│   └── ...
+│
+├── Dockerfile
+└── README.md
+```
+
+## Engineering Decisions
+
+### Separate CI Workflows
+
+Testing, linting, container validation, security checks, and container publishing are separated into individual GitHub Actions workflows.
+
+This keeps each automation responsibility independently visible and makes failures easier to identify from the Actions interface.
+
+### Automated Validation
+
+Automated checks reduce reliance on manual validation and provide consistent feedback whenever changes are introduced.
+
+Testing, linting, container builds, and security analysis each validate a different aspect of the application delivery process.
+
+### Containerisation
+
+Docker provides a repeatable application runtime and allows the same application artifact to be distributed independently of the environment in which it was built.
+
+CI-based Docker build validation also detects containerisation problems before an image is consumed downstream.
+
+### GitHub Container Registry
+
+GHCR is used as the container registry because it integrates directly with GitHub Actions and repository permissions.
+
+The workflow authenticates using GitHub's automatically provided `GITHUB_TOKEN` rather than storing a separate long-lived registry credential.
+
+### Security as Part of CI
+
+Security validation is automated rather than treated solely as a manual review step.
+
+Gitleaks provides secret detection while Zizmor evaluates GitHub Actions configuration, providing security controls across both source control and pipeline configuration.
+
+## Running Locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/CloudRizz/container-cicd-platform.git
+cd container-cicd-platform
+```
+
+Install the application dependencies:
+
+```bash
+cd app
+pip install -r requirements.txt
+```
+
+Run the unit tests:
+
+```bash
+python -m unittest discover
+```
+
+Run linting from the repository root:
+
+```bash
+flake8 app
+```
+
+Build the container:
+
+```bash
+docker build -t container-cicd-platform .
+```
+
+## GitHub Actions Workflows
+
+Pipeline execution and individual job logs can be inspected through the repository's **Actions** tab.
+
+The workflow definitions are maintained under:
+
+```text
+.github/workflows/
+```
+
+This keeps the delivery configuration version-controlled alongside the application.
+
+## Future Improvements
+
+The current platform provides the foundation for a more complete delivery pipeline.
+
+Planned improvements include:
+
+* Restrict container publishing to validated changes on the `main` branch
+* Introduce immutable container version tags alongside `latest`
+* Expand Zizmor analysis across all GitHub Actions workflows
+* Add container vulnerability scanning with Trivy
+* Add dependency vulnerability scanning
+* Introduce GitHub branch protection and required status checks
+* Add automated deployment to AWS
+* Replace long-lived AWS credentials with GitHub OIDC where cloud deployment is introduced
+* Provision deployment infrastructure using Terraform
+* Add Kubernetes deployment automation
+* Introduce environment-specific deployment stages
+* Add deployment approval gates
+* Implement automated rollback strategies
+* Add deployment monitoring and notifications
+
+## Project Scope
+
+This project focuses on the automation and security controls surrounding application delivery, including:
+
+* Continuous Integration
+* Containerisation
+* Automated testing
+* Code-quality validation
+* Secret scanning
+* CI/CD security analysis
+* Container artifact publishing
+* Git-based development workflows
+
+The repository forms part of my Cloud and DevOps engineering portfolio and is designed to evolve as additional infrastructure, deployment, security, and observability capabilities are implemented.
