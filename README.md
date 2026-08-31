@@ -1,8 +1,8 @@
-# CI/CD Demo Project
+# Container CI/CD Platform
 
-This repository demonstrates a practical CI/CD workflow using GitHub Actions.
+A container-based CI/CD pipeline that automatically validates, tests, scans, builds, and publishes a Python application using GitHub Actions and GitHub Container Registry.
 
-The project contains a simple Python application supported by multiple GitHub Actions workflows that demonstrate key DevOps practices, including linting, automated testing, Docker build checks, pull request validation, manual workflow execution, and a basic continuous delivery process.
+The project focuses on repeatable delivery, automated quality checks, container security, and a pull-request-driven development workflow.
 
 ## Project Purpose
 
