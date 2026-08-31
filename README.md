@@ -4,6 +4,16 @@ A container-based CI/CD pipeline that automatically validates, tests, scans, bui
 
 The project focuses on repeatable delivery, automated quality checks, container security, and a pull-request-driven development workflow.
 
+## Key Features
+
+- Automated linting and code-quality validation
+- Automated test execution on pull requests
+- Docker image build validation
+- Container image publishing to GitHub Container Registry (GHCR)
+- Security scanning integrated into the CI/CD workflow
+- Pull-request validation before changes are merged
+- Automated workflows implemented with GitHub Actions
+
 ## Project Purpose
 
 The purpose of this repository is to demonstrate practical CI/CD implementation using GitHub Actions.
